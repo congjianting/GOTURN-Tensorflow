@@ -8,10 +8,10 @@ import goturn_net
 
 NUM_EPOCHS = 500
 BATCH_SIZE = 10
-WIDTH = 227
-HEIGHT = 227
+WIDTH      = 227
+HEIGHT     = 227
 
-logfile = "test.log"
+logfile  = "test.log"
 test_txt = "test_set.txt"
 def load_train_test_set(train_file):
     '''

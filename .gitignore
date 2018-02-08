@@ -20,3 +20,5 @@ train_summary/
 checkpoints_save/
 summary_save/
 train_old/
+train/
+train_trash*
