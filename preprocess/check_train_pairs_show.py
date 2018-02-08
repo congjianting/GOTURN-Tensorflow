@@ -24,14 +24,14 @@ train/target/000000_3_6.jpg,train/searching/000000_4_7.jpg,0.261467,0.529234,0.5
 
 # 输入参数
 # 训练数据清单文件
-input_txt_path        = u'/Volumes/D/e_train/train/train.txt'
+input_txt_path        = u'../predict_result.txt'
 
 # 训练数据的根路径
-input_root            = u"/Volumes/D/e_train"
+input_root            = u"/Users/congjt/GOTURN-Tensorflow"
 
 # 输出参数
 # 待查阅的训练数据的根路径
-output_folder_path    = u'/Volumes/D/e_train_check'
+output_folder_path    = u'/Users/congjt/GOTURN-Tensorflow/predict_result_check'
 
 # 递归遍历深层目录下的指定扩展名的文件路径列表
 def _dir_list(path, allfile, ext):
@@ -113,7 +113,7 @@ def main():
             img_name  = tmp_paths[len(tmp_paths) - 1]  # 搜索图片文件名称
             output_img2_folder_path = os.path.join(output_folder_path, img_name)
 
-            cv2.rectangle(img, (int(img_h/4), int(img_w/4)), (int(img_h*3/4), int(img_w*3/4)), (55, 255, 155), 5)
+            cv2.rectangle(img, (int(img_w/4), int(img_h/4)), (int(img_w*3/4), int(img_h*3/4)), (55, 255, 155), 5)
             cv2.rectangle(img2, (int(track_lx), int(track_ty)), (int(track_rx), int(track_by)), (55, 255, 155), 5)
 
             cv2.imwrite(output_img1_folder_path, img)

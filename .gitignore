@@ -22,3 +22,7 @@ summary_save/
 train_old/
 train/
 train_trash*
+checkpoints*
+debug/
+test/
+predict_result*

@@ -122,7 +122,6 @@ if __name__ == "__main__":
                     model_saver.save(sess, "checkpoints/" + save_ckpt, global_step=i+1)
             print(global_step.eval(session=sess))        
 
-
             cur_batch = sess.run(batch_queue)
 
             start_time = time.time()

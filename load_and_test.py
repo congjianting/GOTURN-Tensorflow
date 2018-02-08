@@ -7,7 +7,7 @@ import os
 import goturn_net
 
 NUM_EPOCHS = 500
-BATCH_SIZE = 10
+BATCH_SIZE = 1
 WIDTH      = 227
 HEIGHT     = 227
 
@@ -59,7 +59,7 @@ def data_reader(input_queue):
 
 def next_batch(input_queue):
     min_queue_examples = 128
-    num_threads = 8
+    num_threads = 1
     [search_tensor, target_tensor, box_tensor] = data_reader(input_queue)
     [search_batch, target_batch, box_batch] = tf.train.batch(
         [search_tensor, target_tensor, box_tensor],
@@ -103,15 +103,25 @@ if __name__ == "__main__":
         saver = tf.train.Saver()
         saver.restore(sess, ckpt.model_checkpoint_path)
     try:
-        for i in range(0, int(len(train_box)/BATCH_SIZE)):
-            cur_batch = sess.run(batch_queue)
-            start_time = time.time()
-            [batch_loss, fc4] = sess.run([tracknet.loss, tracknet.fc4],feed_dict={tracknet.image:cur_batch[0],
-                    tracknet.target:cur_batch[1], tracknet.bbox:cur_batch[2]})
-            logging.info('batch box: %s' %(fc4))
-            logging.info('gt batch box: %s' %(cur_batch[2]))
-            logging.info('batch loss = %f'%(batch_loss))
-            logging.debug('test: time elapsed: %.3fs.'%(time.time()-start_time))
+
+        with open("predict_result.txt", "w") as fin:
+
+            for i in range(0, int(len(train_box)/BATCH_SIZE)):
+
+                cur_batch = sess.run(batch_queue)
+                start_time = time.time()
+                [batch_loss, fc4] = sess.run([tracknet.loss, tracknet.fc4],feed_dict={tracknet.image:cur_batch[0],
+                        tracknet.target:cur_batch[1], tracknet.bbox:cur_batch[2]})
+                logging.info('batch box: %s' %(fc4))
+                logging.info('gt batch box: %s' %(cur_batch[2]))
+                logging.info('batch loss = %f'%(batch_loss))
+                logging.debug('test: time elapsed: %.3fs.'%(time.time()-start_time))
+
+                # batchsize = 1
+                line = "%s,%s,%f,%f,%f,%f\n" % (train_target[i], train_search[i], fc4[0][0]/10, fc4[0][1]/10, fc4[0][2]/10, fc4[0][3]/10)
+                fin.write(line)
+                print(line)
+
     except KeyboardInterrupt:
         print("get keyboard interrupt")
 
