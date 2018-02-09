@@ -24,9 +24,6 @@ key_words             = u"debug"
 # 训练的模型文件权值路径
 model_checkpoint_path = u"./checkpoints/checkpoint.ckpt-51679"
 
-# 多尺度预测
-msc_predict           = False
-
 # 递归遍历深层目录下的指定扩展名的文件路径列表
 def _dir_list(path, allfile, ext):
 
@@ -138,6 +135,167 @@ def compute_highest_similarity_rect(pre_lx, pre_ty, pre_rx, pre_by, eps):
     # 返回最大相似度位置
     return merge_rect[max_idx_], max_value*1.0/rect_num
 
+# 待预测图片封装成batchsize的输入序列
+def package_input_image_batch(example_img_pad, search_img_pad):
+
+    # 封装模板图像数据
+    # 多尺度预测
+    # 尺度0
+    s0_h = example_img_pad.shape[0]
+    s0_w = example_img_pad.shape[1]
+    example_im_pad_s0 = example_img_pad  # 0.5
+    # 尺度1
+    s1_h = int(example_im_pad_s0.shape[0] * 1.2)
+    s1_w = int(example_im_pad_s0.shape[1] * 1.2)
+    offset = int((s1_h - s0_h) / 2)
+    example_im_pad_s1 = np.zeros([s1_h, s1_w, 3], np.uint8)  # 0.6
+    example_im_pad_s1[offset:s0_h + offset, offset:s0_w + offset] = example_im_pad_s0
+    # 尺度2
+    s2_h = int(example_im_pad_s1.shape[0] * 1.2)
+    s2_w = int(example_im_pad_s1.shape[1] * 1.2)
+    offset = int((s2_h - s1_h) / 2)
+    example_im_pad_s2 = np.zeros([s2_h, s2_w, 3], np.uint8)  # 0.72
+    example_im_pad_s2[offset:s1_h + offset, offset:s1_w + offset] = example_im_pad_s1
+    # 尺度3
+    s3_h = int(example_im_pad_s2.shape[0] * 1.2)
+    s3_w = int(example_im_pad_s2.shape[1] * 1.2)
+    offset = int((s3_h - s2_h) / 2)
+    example_im_pad_s3 = np.zeros([s3_h, s3_w, 3], np.uint8)  # 0.864
+    example_im_pad_s3[offset:s2_h + offset, offset:s2_w + offset] = example_im_pad_s2
+    # 尺度4
+    s4_h = int(example_im_pad_s3.shape[0] * 1.2)
+    s4_w = int(example_im_pad_s3.shape[1] * 1.2)
+    offset = int((s4_h - s3_h) / 2)
+    example_im_pad_s4 = np.zeros([s4_h, s4_w, 3], np.uint8)  # 1.0368
+    example_im_pad_s4[offset:s3_h + offset, offset:s3_w + offset] = example_im_pad_s3
+
+    # 调试信息
+    if False:
+        cv2.imwrite("./s0.jpg", example_im_pad_s0)
+        cv2.imwrite("./s1.jpg", example_im_pad_s1)
+        cv2.imwrite("./s2.jpg", example_im_pad_s2)
+        cv2.imwrite("./s3.jpg", example_im_pad_s3)
+        cv2.imwrite("./s4.jpg", example_im_pad_s4)
+
+    # resize
+    # 尺度0
+    example_im_pad_s0 = cv2.resize(example_im_pad_s0, (227, 227), interpolation=cv2.INTER_CUBIC)
+    # 尺度1
+    example_im_pad_s1 = cv2.resize(example_im_pad_s1, (227, 227), interpolation=cv2.INTER_CUBIC)
+    # 尺度2
+    example_im_pad_s2 = cv2.resize(example_im_pad_s2, (227, 227), interpolation=cv2.INTER_CUBIC)
+    # 尺度3
+    example_im_pad_s3 = cv2.resize(example_im_pad_s3, (227, 227), interpolation=cv2.INTER_CUBIC)
+    # 尺度4
+    example_im_pad_s4 = cv2.resize(example_im_pad_s4, (227, 227), interpolation=cv2.INTER_CUBIC)
+
+    # RGB uint8->float32
+    # 尺度0
+    example_im_f_s0 = example_im_pad_s0.astype(np.float32)
+    # 尺度1
+    example_im_f_s1 = example_im_pad_s1.astype(np.float32)
+    # 尺度2
+    example_im_f_s2 = example_im_pad_s2.astype(np.float32)
+    # 尺度3
+    example_im_f_s3 = example_im_pad_s3.astype(np.float32)
+    # 尺度4
+    example_im_f_s4 = example_im_pad_s4.astype(np.float32)
+
+    example_im_f = np.stack([example_im_f_s0, example_im_f_s1, example_im_f_s2, example_im_f_s3, example_im_f_s4])
+
+    # 封装搜索图像数据
+    # resize
+    search_img_pad = cv2.resize(search_img_pad, (227, 227), interpolation=cv2.INTER_CUBIC)
+
+    # RGB uint8->float32
+    search_im_f = search_img_pad.astype(np.float32)
+
+    search_im_f = np.stack([search_im_f, search_im_f, search_im_f, search_im_f, search_im_f])
+
+    return search_im_f, example_im_f
+
+# 解析goturn的batch预测结果
+def merge_goturn_predict_rects(fc4, scol_fix, srow_fix, search_im_w, search_im_h):
+
+    # 定义参数
+    merge_rect = []
+    merge_cred = 0
+    eps        = 0.2 # 距离阈值
+
+    if fc4 is None:
+        return merge_rect, merge_cred
+
+    # batchsize
+    batchsize = fc4.shape[0]
+
+    # padsize
+    search_padsize = max(search_im_w, search_im_h)
+
+    # 预测的位置坐标需要减去pad的偏移量
+    pre_lx = [0.0, 0.0, 0.0, 0.0, 0.0]
+    pre_ty = [0.0, 0.0, 0.0, 0.0, 0.0]
+    pre_rx = [0.0, 0.0, 0.0, 0.0, 0.0]
+    pre_by = [0.0, 0.0, 0.0, 0.0, 0.0]
+
+    for i in range(batchsize):
+        pre_lx[i] = (fc4[i][0] / 10 - scol_fix) * search_padsize / search_im_w
+        pre_ty[i] = (fc4[i][1] / 10 - srow_fix) * search_padsize / search_im_h
+        pre_rx[i] = (fc4[i][2] / 10 - scol_fix) * search_padsize / search_im_w
+        pre_by[i] = (fc4[i][3] / 10 - srow_fix) * search_padsize / search_im_h
+
+    # 取出相似度最多的预测位置
+    merge_rect, merge_cred = compute_highest_similarity_rect(pre_lx, pre_ty, pre_rx, pre_by, eps)
+
+    return merge_rect, merge_cred
+
+
+# 定义goturn的封装类
+
+# 单尺度跟踪类
+# 多尺度跟踪类
+class GoturnTracker:
+
+    def __init__(self, model_checkpoint_path, batch_size):
+
+        # 定义参数
+        self.batchsize = batch_size
+
+        # 定义跟踪预测结果
+        self._predictions_ = {}
+
+        # 创建网络
+        self.model_path    = model_checkpoint_path
+        self.tracknet      = goturn_net.TRACKNET(self.batchsize, train=False)
+        self.tracknet.build()
+
+        # set config
+        tfconfig = tf.ConfigProto(allow_soft_placement=True)
+        tfconfig.gpu_options.allow_growth = True
+        self.sess = tf.Session(config=tfconfig)
+
+        # 初始化
+        init       = tf.global_variables_initializer()
+        init_local = tf.local_variables_initializer()
+        self.sess.run(init)
+        self.sess.run(init_local)
+
+        # 加载权值
+        self.saver = tf.train.Saver()
+        self.saver.restore(self.sess, self.model_path)
+
+
+    # 定义跟踪方法
+    def tracker_evaluation(self, search_im_f, example_im_f):
+
+        # 校验输入参数的size
+        if len(search_im_f) != self.batchsize or len(example_im_f) != self.batchsize:
+            return None
+
+        [self._predictions_["fc4"]] = self.sess.run([self.tracknet.fc4], \
+                                      feed_dict = {self.tracknet.image: search_im_f, self.tracknet.target: example_im_f})
+
+        return self._predictions_["fc4"]
+
 
 if __name__ == "__main__":
 
@@ -148,18 +306,7 @@ if __name__ == "__main__":
     all_gt = 0
 
     # 创建track网络实例
-    tracknet = goturn_net.TRACKNET(BATCH_SIZE, train = False)
-    tracknet.build()
-
-    sess       = tf.Session()
-    init       = tf.global_variables_initializer()
-    init_local = tf.local_variables_initializer()
-    sess.run(init)
-    sess.run(init_local)
-
-    # 加载网络权值
-    saver = tf.train.Saver()
-    saver.restore(sess, model_checkpoint_path)
+    goturn_tracker = GoturnTracker(model_checkpoint_path, BATCH_SIZE)
 
     with open("predict_result.txt", "w") as fin:
 
@@ -205,6 +352,7 @@ if __name__ == "__main__":
 
                 # 读取模板图片文件
                 example_im   = cv2.imread(jpg_list[0])
+                example_im   = np.array(example_im[:, :, ::-1])
 
                 # pad
                 example_img_h, example_img_w, _     = example_im.shape
@@ -213,80 +361,9 @@ if __name__ == "__main__":
                 ecol_fix                            = ecol_fix*1.0/example_padsize
                 erow_fix                            = erow_fix*1.0/example_padsize
 
-                # 多尺度预测
-                # 尺度0
-                s0_h = example_img_pad.shape[0]
-                s0_w = example_img_pad.shape[1]
-                example_im_pad_s0 = example_img_pad  # 0.5
-                # 尺度1
-                s1_h   = int(example_im_pad_s0.shape[0] * scale)
-                s1_w   = int(example_im_pad_s0.shape[1] * scale)
-                offset = int((s1_h-s0_h)/2)
-                example_im_pad_s1                           = np.zeros([s1_h, s1_w, 3], np.uint8)  # 0.6
-                example_im_pad_s1[offset:s0_h+offset, offset:s0_w+offset] = example_im_pad_s0
-                # 尺度2
-                s2_h = int(example_im_pad_s1.shape[0] * scale)
-                s2_w = int(example_im_pad_s1.shape[1] * scale)
-                offset = int((s2_h - s1_h) / 2)
-                example_im_pad_s2                           = np.zeros([s2_h, s2_w, 3], np.uint8)  # 0.72
-                example_im_pad_s2[offset:s1_h+offset, offset:s1_w+offset] = example_im_pad_s1
-                # 尺度3
-                s3_h = int(example_im_pad_s2.shape[0] * scale)
-                s3_w = int(example_im_pad_s2.shape[1] * scale)
-                offset = int((s3_h - s2_h) / 2)
-                example_im_pad_s3                           = np.zeros([s3_h, s3_w, 3], np.uint8)  # 0.864
-                example_im_pad_s3[offset:s2_h+offset, offset:s2_w+offset] = example_im_pad_s2
-                # 尺度4
-                s4_h = int(example_im_pad_s3.shape[0] * scale)
-                s4_w = int(example_im_pad_s3.shape[1] * scale)
-                offset = int((s4_h - s3_h) / 2)
-                example_im_pad_s4                           = np.zeros([s4_h, s4_w, 3], np.uint8)  # 1.0368
-                example_im_pad_s4[offset:s3_h+offset, offset:s3_w+offset] = example_im_pad_s3
-
-                # 调试信息
-                if False:
-                    cv2.imwrite("./s0.jpg", example_im_pad_s0)
-                    cv2.imwrite("./s1.jpg", example_im_pad_s1)
-                    cv2.imwrite("./s2.jpg", example_im_pad_s2)
-                    cv2.imwrite("./s3.jpg", example_im_pad_s3)
-                    cv2.imwrite("./s4.jpg", example_im_pad_s4)
-
-                # resize
-                # 尺度0
-                example_im_pad_s0   = cv2.resize(example_im_pad_s0,(WIDTH, HEIGHT), interpolation=cv2.INTER_CUBIC)
-                # 尺度1
-                example_im_pad_s1 = cv2.resize(example_im_pad_s1, (WIDTH, HEIGHT), interpolation=cv2.INTER_CUBIC)
-                # 尺度2
-                example_im_pad_s2 = cv2.resize(example_im_pad_s2, (WIDTH, HEIGHT), interpolation=cv2.INTER_CUBIC)
-                # 尺度3
-                example_im_pad_s3 = cv2.resize(example_im_pad_s3, (WIDTH, HEIGHT), interpolation=cv2.INTER_CUBIC)
-                # 尺度4
-                example_im_pad_s4 = cv2.resize(example_im_pad_s4, (WIDTH, HEIGHT), interpolation=cv2.INTER_CUBIC)
-
-                # BGR->RGB
-                # 尺度0
-                example_im_s0   = np.array(example_im_pad_s0[:, :, ::-1])
-                example_im_f_s0 = example_im_s0.astype(np.float32)
-                # 尺度1
-                example_im_s1   = np.array(example_im_pad_s1[:, :, ::-1])
-                example_im_f_s1 = example_im_s1.astype(np.float32)
-                # 尺度2
-                example_im_s2   = np.array(example_im_pad_s2[:, :, ::-1])
-                example_im_f_s2 = example_im_s2.astype(np.float32)
-                # 尺度3
-                example_im_s3 = np.array(example_im_pad_s3[:, :, ::-1])
-                example_im_f_s3 = example_im_s3.astype(np.float32)
-                # 尺度4
-                example_im_s4   = np.array(example_im_pad_s4[:, :, ::-1])
-                example_im_f_s4 = example_im_s4.astype(np.float32)
-
-                if msc_predict == True:
-                    example_im_f = np.stack([example_im_f_s0, example_im_f_s1, example_im_f_s2, example_im_f_s3, example_im_f_s4])
-                else:
-                    example_im_f = np.stack([example_im_f_s0, example_im_f_s0, example_im_f_s0, example_im_f_s0, example_im_f_s0])
-
                 # 读取搜索图片文件
                 search_im    = cv2.imread(jpg_list[1])
+                search_im    = np.array(search_im[:, :, ::-1])
 
                 # pad
                 search_im_h, search_im_w, _        = search_im.shape
@@ -295,39 +372,29 @@ if __name__ == "__main__":
                 scol_fix                           = scol_fix * 1.0 / search_padsize
                 srow_fix                           = srow_fix * 1.0 / search_padsize
 
-                # 调试信息
-                if False:
-                    cv2.imwrite("./search.jpg", search_img_pad)
+                # 封装待预测图像batch
+                search_im_f, example_im_f = package_input_image_batch(example_img_pad, search_img_pad)
 
-                # resize
-                search_img_pad = cv2.resize(search_img_pad, (WIDTH, HEIGHT), interpolation=cv2.INTER_CUBIC)
 
-                # BGR->RGB
-                search_im    = np.array(search_img_pad[:, :, ::-1])
-                search_im_f  = search_im.astype(np.float32)
 
-                search_im_f  = np.stack([search_im_f, search_im_f, search_im_f, search_im_f, search_im_f])
+                # 单个/多个尺度的图片对预测
+                fc4 = goturn_tracker.tracker_evaluation(search_im_f, example_im_f)
 
-                # 单个尺度的图片对预测
-                [fc4] = sess.run([tracknet.fc4], feed_dict={tracknet.image: search_im_f, tracknet.target: example_im_f})
+                # 定义预测结果
+                pre_lx_last = 0
+                pre_ty_last = 0
+                pre_rx_last = 0
+                pre_by_last = 0
+                cred        = 0
 
-                # 预测的位置坐标需要减去pad的偏移量
-                pre_lx = [0.0, 0.0, 0.0, 0.0, 0.0]
-                pre_ty = [0.0, 0.0, 0.0, 0.0, 0.0]
-                pre_rx = [0.0, 0.0, 0.0, 0.0, 0.0]
-                pre_by = [0.0, 0.0, 0.0, 0.0, 0.0]
+                merge_rect, merge_cred = merge_goturn_predict_rects(fc4, scol_fix, srow_fix, search_im_w, search_im_h)
 
-                for i in range(5):
-                    pre_lx[i] = (fc4[i][0] / 10 - scol_fix)*search_padsize/search_im_w
-                    pre_ty[i] = (fc4[i][1] / 10 - srow_fix)*search_padsize/search_im_h
-                    pre_rx[i] = (fc4[i][2] / 10 - scol_fix)*search_padsize/search_im_w
-                    pre_by[i] = (fc4[i][3] / 10 - srow_fix)*search_padsize/search_im_h
-
-                # 取出相似度最多的预测位置
-                [pre_lx_last, pre_ty_last, pre_rx_last, pre_by_last], score = compute_highest_similarity_rect(pre_lx, pre_ty, pre_rx, pre_by, 0.2)
-
-                # 打印score
-                print("score=%f" % score)
+                if merge_cred > 0:
+                    pre_lx_last = merge_rect[0]
+                    pre_ty_last = merge_rect[1]
+                    pre_rx_last = merge_rect[2]
+                    pre_by_last = merge_rect[3]
+                    cred        = merge_cred
 
                 # 将当前图片的预测结果写入到预测记录的txt中
                 line = "%s/%s/%s,%s/%s/%s,%f,%f,%f,%f\n" % ( key_words,fileName, os.path.basename(jpg_list[0]), \
