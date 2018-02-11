@@ -32,4 +32,12 @@ selftest/
 selftestpad/
 train_0207/
 train_summary/
+checkpoints/
+pb/
+goturn_tracker_pb.py
+未命名*
+*trash*
+train_*
+predict_*
+*log
 

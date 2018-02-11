@@ -95,13 +95,11 @@ if __name__ == "__main__":
     # start the threads
     tf.train.start_queue_runners(sess=sess, coord=coord)
 
-    ckpt_dir = "./checkpoints"
-    if not os.path.exists(ckpt_dir):
-        os.makedirs(ckpt_dir)
-    ckpt = tf.train.get_checkpoint_state(ckpt_dir)
-    if ckpt and ckpt.model_checkpoint_path:
-        saver = tf.train.Saver()
-        saver.restore(sess, ckpt.model_checkpoint_path)
+    ckpt_dir = "./checkpoints/checkpoint.ckpt-51679"
+
+    saver = tf.train.Saver()
+    saver.restore(sess, ckpt_dir)
+
     try:
 
         with open("predict_result.txt", "w") as fin:

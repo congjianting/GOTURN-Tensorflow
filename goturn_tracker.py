@@ -223,7 +223,7 @@ def merge_goturn_predict_rects(fc4, scol_fix, srow_fix, search_im_w, search_im_h
     eps        = 0.2 # 距离阈值
 
     if fc4 is None:
-        return merge_rect, merge_cred
+        return [], merge_cred
 
     # batchsize
     batchsize = fc4.shape[0]
@@ -246,7 +246,14 @@ def merge_goturn_predict_rects(fc4, scol_fix, srow_fix, search_im_w, search_im_h
     # 取出相似度最多的预测位置
     merge_rect, merge_cred = compute_highest_similarity_rect(pre_lx, pre_ty, pre_rx, pre_by, eps)
 
-    return merge_rect, merge_cred
+    # 边界保护 (左,上,右,下)
+    track_box    = [0,0,0,0]
+    track_box[0] = max(0, merge_rect[0])
+    track_box[1] = max(0, merge_rect[1])
+    track_box[2] = min(search_im_w-1, merge_rect[2])
+    track_box[3] = min(search_im_h-1, merge_rect[3])
+
+    return track_box, merge_cred
 
 
 # 定义goturn的封装类
@@ -388,6 +395,8 @@ if __name__ == "__main__":
                 cred        = 0
 
                 merge_rect, merge_cred = merge_goturn_predict_rects(fc4, scol_fix, srow_fix, search_im_w, search_im_h)
+
+                print merge_cred
 
                 if merge_cred > 0:
                     pre_lx_last = merge_rect[0]

@@ -27,7 +27,7 @@ resize_method       = 0  # 0: 三次插值  1: 最近邻插值
 
 
 # 图像文件的根路径
-input_image_rootdir =  u'/Users/congjt/GOTURN-Tensorflow/selftestpad/13'
+input_image_rootdir =  u'/Users/congjt/GOTURN-Tensorflow/debug/未命名文件夹'
 
 # 输出参数
 
