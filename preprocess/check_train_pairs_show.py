@@ -12,6 +12,8 @@ from copy import deepcopy
 
 """ 函数功能
 
+格式有差异
+
 实现将跟踪框的位置坐标叠加到对应的图像上显示,用于查阅训练数据的坐标合理性
 
 # goturn的训练清单格式如下, path1,path2,lx,ty,rx,by
@@ -24,14 +26,14 @@ train/target/000000_3_6.jpg,train/searching/000000_4_7.jpg,0.261467,0.529234,0.5
 
 # 输入参数
 # 训练数据清单文件
-input_txt_path        = u'../predict_result.txt'
+input_txt_path        = u'/Volumes/D/error_hard/predict_result.txt'
 
 # 训练数据的根路径
-input_root            = u"/Users/congjt/GOTURN-Tensorflow"
+input_root            = u"/Volumes/D"
 
 # 输出参数
 # 待查阅的训练数据的根路径
-output_folder_path    = u'/Users/congjt/GOTURN-Tensorflow/predict_result_check'
+output_folder_path    = u'/Volumes/D/error_hard_PRE_check_1.2'
 
 # 递归遍历深层目录下的指定扩展名的文件路径列表
 def _dir_list(path, allfile, ext):
@@ -75,11 +77,11 @@ def main():
 
             # 校验图片文件是否存在
             if not os.path.exists(os.path.join(input_root, exampleimg_name)):
-                print(u"check image file path error! %s" % exampleimg_name)
-                return
+                print(u"check exmaple image file path error! %s" % exampleimg_name)
+                continue
             if not os.path.exists(os.path.join(input_root, searchimg_name)):
-                print(u"check image file path error! %s" % searchimg_name)
-                return
+                print(u"check search image file path error! %s" % searchimg_name)
+                continue
 
             # 读取图片文件
             img = cv2.imread(os.path.join(input_root, exampleimg_name))
@@ -100,10 +102,10 @@ def main():
             img2_h, img2_w, _ = img2.shape
 
             # 根据跟踪坐标是否归一化来计算跟踪框坐标
-            track_lx = float(split_line[2])*img2_w
-            track_ty = float(split_line[3])*img2_h
-            track_rx = float(split_line[4])*img2_w
-            track_by = float(split_line[5])*img2_h
+            track_lx = max(0.0,float(split_line[2])*img2_w)
+            track_ty = max(0.0,float(split_line[3])*img2_h)
+            track_rx = min(0.99,float(split_line[4]))*img2_w
+            track_by = min(0.99,float(split_line[5]))*img2_h
 
             # 构建出输出路径
             tmp_paths = split_line[0].split("/")

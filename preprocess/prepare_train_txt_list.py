@@ -29,16 +29,16 @@ import numpy as np
 """
 
 # 定义策略的方法
-method             = 3
+method             = 1
 
 # 定义文件计数器的起始值
-ini_counter        = 180000
+ini_counter        = 200000
 
 # 定义输入数据的根路径
-input_folder_path  = u'/Volumes/D/e'
+input_folder_path  = u'/Volumes/D/0316/b'
 
 # 定义输出数据的根路径
-output_folder_path = u'/Volumes/D/e_train'
+output_folder_path = u'/Volumes/D/0316/b_train'
 
 # 递归遍历深层目录下的指定扩展名的文件路径列表
 def _dir_list(path, allfile, ext):
@@ -275,7 +275,7 @@ def main():
         # 读取已经清洗后的训练清单, 这样就有个有效的数据对来源
         example_name_ref_list = []
         search_name_ref_list  = []
-        with open("../train_0207/train_update_0207.txt", u"r") as fr:
+        with open("../train/train_update_0207.txt", u"r") as fr:
             # train/target/000000_0_0.jpg,train/searching/000000_1_1.jpg,0.375505,0.271421,0.625505,0.521421
             for one_line in fr.readlines():
                 one_line = one_line.strip('\n')

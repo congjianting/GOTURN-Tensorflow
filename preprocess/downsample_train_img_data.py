@@ -64,7 +64,7 @@ def _dir_list(path, allfile, ext):
 
 # 输入参数
 # 训练数据的根路径
-input_folder_path    = u'/Volumes/E/尤晶晶图片备份/train——原图/e'
+input_folder_path    = u'/Volumes/D/0316/b'
 
 # 定义主函数
 def main():
@@ -110,7 +110,7 @@ def main():
                     split_line = one_line.split(",")
 
                     tmp_paths  = split_line[8].split("/")
-                    img_name   = tmp_paths[len(tmp_paths)-1]  # 图片文件名称
+                    img_name   = tmp_paths[len(tmp_paths)-1]+ " (2).jpg"  # 图片文件名称
 
                     # 校验图片文件是否存在
                     if not os.path.exists(os.path.join(input_folder_path, img_folder_name, img_name)):

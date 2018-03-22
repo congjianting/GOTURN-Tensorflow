@@ -12,6 +12,8 @@ from copy import deepcopy
 
 """ 函数功能
 
+数据格式规则, 这里从晶晶那转过来
+
 实现将跟踪框的位置坐标叠加到对应的图像上显示,用于查阅训练数据标注结果的合理性
 
 # 单个文件夹下的训练标注文件格式如下, 0,1,img_w,img_h,lx,tx,w,h,path
@@ -31,11 +33,11 @@ need_show_track = 1
 
 # 输入参数
 # 训练数据的根路径
-input_folder_path    = u'/Volumes/D/track_samples_test'
+input_folder_path     = u'/Volumes/D/0316/a'
 
 # 输出参数
 # 待查阅的训练数据的根路径
-output_folder_path    = u'/Volumes/D/track_samples_test_check'
+output_folder_path    = u'/Volumes/D/0316/a_check'
 
 # 递归遍历深层目录下的指定扩展名的文件路径列表
 def _dir_list(path, allfile, ext):
