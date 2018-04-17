@@ -95,7 +95,7 @@ if __name__ == "__main__":
     # start the threads
     tf.train.start_queue_runners(sess=sess, coord=coord)
 
-    ckpt_dir = "./checkpoints/checkpoint.ckpt-51679"
+    ckpt_dir = "./checkpoints/checkpoint.ckpt-58360"
 
     saver = tf.train.Saver()
     saver.restore(sess, ckpt_dir)

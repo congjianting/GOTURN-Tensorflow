@@ -26,14 +26,14 @@ train/target/000000_3_6.jpg,train/searching/000000_4_7.jpg,0.261467,0.529234,0.5
 
 # 输入参数
 # 训练数据清单文件
-input_txt_path        = u'/Volumes/D/error_hard/predict_result.txt'
+input_txt_path        = u'../predict_result.txt'
 
 # 训练数据的根路径
-input_root            = u"/Volumes/D"
+input_root            = u"/Users/congjt/GOTURN-Tensorflow"
 
 # 输出参数
 # 待查阅的训练数据的根路径
-output_folder_path    = u'/Volumes/D/error_hard_PRE_check_1.2'
+output_folder_path    = u'../error_mazida_check_1.1'
 
 # 递归遍历深层目录下的指定扩展名的文件路径列表
 def _dir_list(path, allfile, ext):

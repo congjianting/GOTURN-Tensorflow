@@ -13,19 +13,19 @@ import numpy as np
 BATCH_SIZE = 5    # 固定设置成5
 WIDTH      = 227
 HEIGHT     = 227
-scale      = 1.2
+scale      = 1.1
 
 # 预测的图片文件序列
-predict_dir           = u"/Users/congjt/GOTURN-Tensorflow/debug"
+predict_dir           = u"./debug"
 
 # 图片文件序列的关键词
 key_words             = u"debug"
 
 # 训练的模型文件权值路径
-model_checkpoint_path = u"./checkpoints/checkpoint.ckpt-51679"
+model_checkpoint_path = u"./checkpoints/checkpoint.ckpt-83021"
 
 # 多尺度预测
-msc_predict           = False
+msc_predict           = True
 
 # 递归遍历深层目录下的指定扩展名的文件路径列表
 def _dir_list(path, allfile, ext):
@@ -244,7 +244,7 @@ if __name__ == "__main__":
                 example_im_pad_s4[offset:s3_h+offset, offset:s3_w+offset] = example_im_pad_s3
 
                 # 调试信息
-                if False:
+                if True:
                     cv2.imwrite("./s0.jpg", example_im_pad_s0)
                     cv2.imwrite("./s1.jpg", example_im_pad_s1)
                     cv2.imwrite("./s2.jpg", example_im_pad_s2)
@@ -296,7 +296,7 @@ if __name__ == "__main__":
                 srow_fix                           = srow_fix * 1.0 / search_padsize
 
                 # 调试信息
-                if False:
+                if True:
                     cv2.imwrite("./search.jpg", search_img_pad)
 
                 # resize
@@ -322,6 +322,8 @@ if __name__ == "__main__":
                     pre_ty[i] = (fc4[i][1] / 10 - srow_fix)*search_padsize/search_im_h
                     pre_rx[i] = (fc4[i][2] / 10 - scol_fix)*search_padsize/search_im_w
                     pre_by[i] = (fc4[i][3] / 10 - srow_fix)*search_padsize/search_im_h
+
+                    #print("idx: %d, lx=%f,ty=%f,rx=%f,by=%f\n" % (i,pre_lx[i],pre_ty[i],pre_rx[i],pre_by[i]))
 
                 # 取出相似度最多的预测位置
                 [pre_lx_last, pre_ty_last, pre_rx_last, pre_by_last], score = compute_highest_similarity_rect(pre_lx, pre_ty, pre_rx, pre_by, 0.2)

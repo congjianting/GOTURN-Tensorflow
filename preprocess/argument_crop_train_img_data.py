@@ -154,8 +154,8 @@ def main():
                     w_range = track_lx
                     h_range = track_ty
 
-                    w_offset = w_range/4 + extra_x_diff + random.random()*w_range/2
-                    h_offset = h_range/4 + extra_y_diff + random.random()*h_range/2
+                    w_offset = w_range/4 + extra_x_diff + random.random()*w_range/3
+                    h_offset = h_range/4 + extra_y_diff + random.random()*h_range/3
 
                     w_offset = max(0.0, w_offset)
                     h_offset = max(0.0, h_offset)
@@ -187,8 +187,8 @@ def main():
                     w_range = 1.0-track_rx
                     h_range = track_ty
 
-                    w_offset = w_range / 4 + extra_x_diff + random.random() * w_range / 2
-                    h_offset = h_range / 4 + extra_y_diff + random.random() * h_range / 2
+                    w_offset = w_range / 4 + extra_x_diff + random.random() * w_range / 3
+                    h_offset = h_range / 4 + extra_y_diff + random.random() * h_range / 3
 
                     w_offset = max(0.0, w_offset)
                     h_offset = max(0.0, h_offset)
@@ -221,8 +221,8 @@ def main():
                     w_range = 1.0 - track_rx
                     h_range = 1.0 - track_by
 
-                    w_offset = w_range / 4 + extra_x_diff + random.random() * w_range / 2
-                    h_offset = h_range / 4 + extra_y_diff + random.random() * h_range / 2
+                    w_offset = w_range / 4 + extra_x_diff + random.random() * w_range / 3
+                    h_offset = h_range / 4 + extra_y_diff + random.random() * h_range / 3
 
                     w_offset = max(0.0, w_offset)
                     h_offset = max(0.0, h_offset)
@@ -254,8 +254,8 @@ def main():
                     w_range = track_lx
                     h_range = 1.0 - track_by
 
-                    w_offset = w_range / 4 + extra_x_diff + random.random() * w_range / 2
-                    h_offset = h_range / 4 + extra_y_diff + random.random() * h_range / 2
+                    w_offset = w_range / 4 + extra_x_diff + random.random() * w_range / 3
+                    h_offset = h_range / 4 + extra_y_diff + random.random() * h_range / 3
 
                     w_offset = max(0.0, w_offset)
                     h_offset = max(0.0, h_offset)

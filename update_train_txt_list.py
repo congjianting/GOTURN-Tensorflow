@@ -16,16 +16,16 @@ import numpy as np
 """
 
 # 定义输入训练清单的路径
-input_txt_path    = u"/Users/congjt/GOTURN-Tensorflow/train/train.txt"
+input_txt_path    = u"/Users/congjt/data/train_bk_0316/train/train_update_0316.txt"
 
 # 定义参考干净数据集的根路径
-input_ref_path    = u"/Volumes/E/尤晶晶图片备份/跟踪清洗数据/干净数据"
+input_ref_path    = u"/Users/congjt/data/train_bk_0316_check_okay"
 
 # 定义输出训练清单的路径
-output_txt_path   = u"/Users/congjt/GOTURN-Tensorflow/train/train_update_0207.txt"
+output_txt_path   = u"/Users/congjt/GOTURN-Tensorflow/train/train_update_0322.txt"
 
 # 定义输出的垃圾数据的路径
-output_trash_path = u"/Users/congjt/GOTURN-Tensorflow/train_trash_0207"
+output_trash_path = u"/Users/congjt/data/train_trash_0322"
 
 # 递归遍历深层目录下的指定扩展名的文件路径列表
 def _dir_list(path, allfile, ext):
@@ -71,9 +71,9 @@ def main():
                 split_line = one_line.split(",")
 
                 # 解析出模板图像文件路径
-                exampleimg_path = os.path.join("/Users/congjt/GOTURN-Tensorflow",split_line[0])
+                exampleimg_path = os.path.join("/Users/congjt/data/train_bk_0316",split_line[0])
                 # 解析出搜索图像文件路径
-                searchimg_path  = os.path.join("/Users/congjt/GOTURN-Tensorflow",split_line[1])
+                searchimg_path  = os.path.join("/Users/congjt/data/train_bk_0316",split_line[1])
 
                 # 解析出位置坐标
                 track_lx = float(split_line[2])

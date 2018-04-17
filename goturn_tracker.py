@@ -22,7 +22,7 @@ predict_dir           = u"/Users/congjt/GOTURN-Tensorflow/debug"
 key_words             = u"debug"
 
 # 训练的模型文件权值路径
-model_checkpoint_path = u"./checkpoints/checkpoint.ckpt-51679"
+model_checkpoint_path = u"./checkpoints/checkpoint.ckpt-146966 "
 
 # 递归遍历深层目录下的指定扩展名的文件路径列表
 def _dir_list(path, allfile, ext):

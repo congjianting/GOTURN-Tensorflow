@@ -17,7 +17,7 @@ BATCH_SIZE = 50
 WIDTH      = 227
 HEIGHT     = 227
 train_txt  = u"./train/train_update_0207.txt" # "train_set.txt"
-logfile    = "train_0207.log"
+logfile    = "train.log"
 def load_training_set(train_file):
     '''
     return train_set

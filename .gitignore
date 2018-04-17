@@ -30,7 +30,7 @@ predict_result*
 debug/
 selftest/
 selftestpad/
-train_0207/
+train/
 train_summary/
 checkpoints/
 pb/
