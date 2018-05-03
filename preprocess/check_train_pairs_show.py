@@ -14,7 +14,7 @@ from copy import deepcopy
 
 格式有差异
 
-实现将跟踪框的位置坐标叠加到对应的图像上显示,用于查阅训练数据的坐标合理性
+实现将跟踪框的位置坐标叠加到对应的图像上显示,用于查阅训练数据结果是否正确
 
 # goturn的训练清单格式如下, path1,path2,lx,ty,rx,by
 train/target/000000_0_0.jpg,train/searching/000000_1_1.jpg,0.375505,0.271421,0.625505,0.521421
@@ -26,14 +26,14 @@ train/target/000000_3_6.jpg,train/searching/000000_4_7.jpg,0.261467,0.529234,0.5
 
 # 输入参数
 # 训练数据清单文件
-input_txt_path        = u'../predict_result.txt'
+input_txt_path        = u'/Volumes/D/track_data0416_train/train/train_update_0416.txt'
 
 # 训练数据的根路径
-input_root            = u"/Users/congjt/GOTURN-Tensorflow"
+input_root            = u"/Volumes/D/track_data0416_train"
 
 # 输出参数
 # 待查阅的训练数据的根路径
-output_folder_path    = u'../error_mazida_check_1.1'
+output_folder_path    = u'/Volumes/D/track_data0416_train_check'
 
 # 递归遍历深层目录下的指定扩展名的文件路径列表
 def _dir_list(path, allfile, ext):

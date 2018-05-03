@@ -16,13 +16,13 @@ HEIGHT     = 227
 scale      = 1.2
 
 # 预测的图片文件序列
-predict_dir           = u"/Users/congjt/GOTURN-Tensorflow/debug"
+predict_dir           = u"/Users/congjt/GOTURN-Tensorflow/track_0316"
 
 # 图片文件序列的关键词
-key_words             = u"debug"
+key_words             = u"track_0316"
 
 # 训练的模型文件权值路径
-model_checkpoint_path = u"./checkpoints/checkpoint.ckpt-146966 "
+model_checkpoint_path = u"./checkpoints/checkpoint.ckpt-26181"
 
 # 递归遍历深层目录下的指定扩展名的文件路径列表
 def _dir_list(path, allfile, ext):

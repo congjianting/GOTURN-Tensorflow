@@ -12,6 +12,8 @@ from PIL import Image
 
 """ 函数功能
 
+从晶晶那获得的数据预处理第1步
+
 1.将较大尺寸的训练图像文件(例如1M以上)进行降采样,减小图像的尺寸(会降低图像分辨率).
 2.需要更新训练图像的标注结果文件TXT, 使用归一化的跟踪位置坐标进行记录.
 
@@ -64,7 +66,7 @@ def _dir_list(path, allfile, ext):
 
 # 输入参数
 # 训练数据的根路径
-input_folder_path    = u'/Volumes/D/0316/b'
+input_folder_path    = u'/Volumes/D/track_data0416'
 
 # 定义主函数
 def main():
@@ -74,10 +76,10 @@ def main():
     jpg_list = []
     _dir_list(input_folder_path, jpg_list, '.jpg')
 
-    for one_jpg in jpg_list:
-        compress(one_jpg)
-
-    print "compress jpg done!"
+    # for one_jpg in jpg_list:
+    #     compress(one_jpg)
+    #
+    # print "compress jpg done!"
 
     # step2: 更新训练标注文件TXT的内容
     # 遍历训练数据的标注文件TXT
@@ -97,7 +99,7 @@ def main():
             continue
 
         # 创建tmp下的临时文件
-        with open(u"/tmp/tmp_track.txt", u"w+") as fout:
+        with open(u"/Volumes/D/tmp_track.txt", u"w+") as fout:
 
             # 打开txt文件,解析出清单中涉及到的图片文件, 要求图片格式均为jpg
             with open(one_txt_path, u"r") as f:
@@ -110,7 +112,7 @@ def main():
                     split_line = one_line.split(",")
 
                     tmp_paths  = split_line[8].split("/")
-                    img_name   = tmp_paths[len(tmp_paths)-1]+ " (2).jpg"  # 图片文件名称
+                    img_name   = tmp_paths[len(tmp_paths)-1]  # 图片文件名称
 
                     # 校验图片文件是否存在
                     if not os.path.exists(os.path.join(input_folder_path, img_folder_name, img_name)):
@@ -150,7 +152,7 @@ def main():
                     fout.write(strresult)
 
         # 删除掉原TXT文件, 将临时文件拷贝到当前TXT文件的路径下替换
-        shutil.move(u"/tmp/tmp_track.txt", one_txt_path)
+        shutil.move(u"/Volumes/D/tmp_track.txt", one_txt_path)
         print "adjust train txt done!"
 
 
